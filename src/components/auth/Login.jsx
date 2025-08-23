@@ -50,8 +50,11 @@ const Login = ({ darkMode }) => {
 
   const validateOtp = () => {
     const e = {};
-    const otpTrim = otp.trim();
-    if (!/^\d{4,8}$/.test(otpTrim)) e.otp = 'Enter a valid numeric OTP (4-8 digits)';
+    // keep only ASCII digits for validation
+    const digitsOnly = (otp || '').replace(/\D/g, '');
+    if (digitsOnly.length < 4 || digitsOnly.length > 8) {
+      e.otp = 'Enter a valid numeric OTP (4-8 digits)';
+    }
     setErrors((prev) => ({ ...prev, ...e }));
     return Object.keys(e).length === 0;
   };
@@ -63,7 +66,7 @@ const Login = ({ darkMode }) => {
 
     try {
       setIsVerifying(true);
-      const result = await verifyOtp(email, otp.trim(), role);
+      const result = await verifyOtp(email, otp.replace(/\D/g, ''), role);
       if (result.success) {
         // Redirect is handled by AuthContext
       } else {
@@ -141,16 +144,17 @@ const Login = ({ darkMode }) => {
       ) : (
         <form onSubmit={handleVerifyOtp}>
           <input
-            type="text"
+            type="tel"
             value={otp}
-            onChange={(e) => setOtp(e.target.value)}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
             onBlur={validateOtp}
             placeholder="OTP"
             className={`w-full p-3 mb-2 border rounded ${errors.otp ? 'border-red-500' : ''}`}
             required
             aria-invalid={!!errors.otp}
             inputMode="numeric"
-            pattern="\\d*"
+            pattern="[0-9]{4,8}"
+            maxLength={8}
           />
           {errors.otp && <p className="text-red-600 text-sm mb-2">{errors.otp}</p>}
           <motion.button 
