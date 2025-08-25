@@ -19,7 +19,14 @@ const Register = ({ darkMode }) => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'phone') {
+      // digits only, no leading +
+      const sanitized = value.replace(/\D/g, '').slice(0, 15);
+      setFormData({ ...formData, phone: sanitized });
+      return;
+    }
+    setFormData({ ...formData, [name]: value });
   };
 
   const validate = () => {
@@ -32,7 +39,8 @@ const Register = ({ darkMode }) => {
     if (!ageNum || ageNum < 18 || ageNum > 120) e.age = 'Age must be between 18 and 120';
     if (!['M', 'F'].includes(formData.gender)) e.gender = 'Select a gender';
     if (!formData.location || formData.location.trim().length < 2) e.location = 'Enter a valid location';
-    if (!/^\+?\d{10,15}$/.test(formData.phone.trim())) e.phone = 'Enter a valid phone number (10-15 digits)';
+    // Indian numbers: either 10 digits (local) or 12 digits starting with 91 (country code without +)
+    if (!/^(91\d{10}|\d{10})$/.test(formData.phone.trim())) e.phone = 'Enter 10 digits (local) or 91 + 10 digits (no +)';
     if (!['customer', 'employee'].includes(formData.role)) e.role = 'Select a valid role';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -132,13 +140,18 @@ const Register = ({ darkMode }) => {
         {errors.location && <p className="text-red-600 text-sm mb-2">{errors.location}</p>}
         <input 
           name="phone" 
+          type="tel"
+          inputMode="numeric"
           value={formData.phone} 
           onChange={handleChange}
           onBlur={validate} 
-          placeholder="Phone" 
+          placeholder="Phone (10 digits or 91 + 10 digits)" 
           className={`w-full p-3 mb-2 border rounded ${errors.phone ? 'border-red-500' : ''}`} 
           required 
           aria-invalid={!!errors.phone}
+          pattern="^(91\d{10}|\d{10})$"
+          title="Enter 10 digits (local) or 91 followed by 10 digits (numbers only)"
+          maxLength={12}
         />
         {errors.phone && <p className="text-red-600 text-sm mb-2">{errors.phone}</p>}
         <select 
