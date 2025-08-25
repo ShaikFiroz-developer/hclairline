@@ -322,7 +322,7 @@ const Home = () => {
                     <p className="font-semibold">{deal.route}</p>
                     <p className="mt-1 text-sm text-gray-600">Limited-time offer</p>
                     <div className="mt-4 flex items-center justify-between">
-                      <p className="text-2xl font-extrabold text-indigo-600">₹{deal.price}</p>
+                      <p className="text-2xl font-extrabold text-indigo-600">${deal.price}</p>
                       <Link to={isAuthenticated && user?.role === 'customer' ? '/customer/search' : '/login'} className="px-4 py-2 rounded-md bg-white text-indigo-700 ring-1 ring-black/5 hover:bg-indigo-50">Book now</Link>
                     </div>
                   </div>
@@ -398,7 +398,7 @@ const Home = () => {
               <h2 className="text-3xl font-bold">HCL Airlines Rewards</h2>
               <p className="mt-3 text-gray-600">Earn miles on every trip and elevate your status to enjoy lounge access, extra baggage, and priority boarding.</p>
               <ul className="mt-6 space-y-2 text-gray-700 list-disc list-inside">
-                <li>Earn 1 mile for every ₹50 spent</li>
+                <li>Earn 1 mile for every $50 spent</li>
                 <li>Tiered benefits: Silver, Gold, Platinum</li>
                 <li>Redeem miles for flights and upgrades</li>
               </ul>
