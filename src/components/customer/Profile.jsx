@@ -12,7 +12,6 @@ const Profile = () => {
     age: '',
     gender: '',
     location: '',
-    passport_number: '',
     address: '',
     emergency_contact: '',
     preferences: {
@@ -245,21 +244,6 @@ const Profile = () => {
                     !isEditing ? 'opacity-75 cursor-not-allowed' : ''
                   }`}
                   placeholder="City, Country"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  Passport Number
-                </label>
-                <input
-                  name="passport_number"
-                  value={formData.passport_number || ''}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className={`w-full p-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                    !isEditing ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
                 />
               </div>
 

@@ -14,7 +14,7 @@ const BookTicket = ({ darkMode }) => {
     flight_name: selected?.flight_name || (flightId || ''),
     class: (selected?.classType || 'economy'),
     seats_requested: 1,
-    passengers: [{ name: '', age: '', gender: '', passport: 'P1234567' }]
+    passengers: [{ name: '', age: '', gender: '' }]
   });
   
   const [flightDetails, setFlightDetails] = useState(selected);
@@ -65,7 +65,7 @@ const BookTicket = ({ darkMode }) => {
     setFormData({
       ...formData,
       seats_requested: formData.seats_requested + 1,
-      passengers: [...formData.passengers, { name: '', age: '', gender: '', passport: 'P1234567' }]
+      passengers: [...formData.passengers, { name: '', age: '', gender: '' }]
     });
   };
 
@@ -93,8 +93,7 @@ const BookTicket = ({ darkMode }) => {
         passengers: formData.passengers.map(p => ({
           name: p.name,
           age: parseInt(p.age, 10),
-          gender: p.gender,
-          passport: p.passport
+          gender: p.gender
         }))
       };
       
@@ -264,17 +263,7 @@ const BookTicket = ({ darkMode }) => {
                     </select>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1 font-medium">Passport Number</label>
-                  <input
-                    name="passport"
-                    value={passenger.passport || ''}
-                    onChange={(e) => handlePassengerChange(index, e)}
-                    placeholder="e.g., X1234567"
-                    className={`w-full p-3 border rounded-lg ${darkMode ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
-                  />
-                  <p className="text-xs mt-1 text-gray-500">Default applied. You can edit if needed.</p>
-                </div>
+                
               </div>
             </div>
           ))}

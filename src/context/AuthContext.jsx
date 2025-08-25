@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true, message: response.data.msg };
     } catch (err) {
-      const errorMessage = err.response?.data?.msg || 'Login failed';
+      const errorMessage = err.response?.data?.msg || err.response?.data?.message || 'Login failed';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'OTP verification failed';
+      const errorMessage = err.response?.data?.msg || err.response?.data?.message || 'OTP verification failed';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
       await api.post('/register', userData);
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Registration failed';
+      const errorMessage = err.response?.data?.msg || err.response?.data?.message || 'Registration failed';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -135,7 +135,7 @@ export const AuthProvider = ({ children }) => {
       setUser(normalizeUser(refreshed.data));
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Profile update failed';
+      const errorMessage = err.response?.data?.msg || err.response?.data?.message || 'Profile update failed';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -164,4 +164,7 @@ export const useAuth = () => {
   return context;
 };
 
-export default AuthContext;
+// Export default as component to make Fast Refresh happy
+export default AuthProvider;
+// Export the context as a named export (useAuth is already exported above)
+export { AuthContext };

@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { showLoader, hideLoader } from './loading';
 
+//https://pythonserver-cqyu.onrender.com
+//http://localhost:5000
 const API_BASE_URL = 'https://pythonserver-cqyu.onrender.com';
 
 // Create axios instance with base URL
@@ -35,10 +37,18 @@ api.interceptors.response.use(
   },
   (error) => {
     hideLoader();
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+    const status = error.response?.status;
+    const reqUrl = error.config?.url || '';
+    const isAuthEndpoint = /\/login$|\/verify_otp$/.test(reqUrl);
+    if (status === 401) {
+      const token = localStorage.getItem('token');
+      // Only force-redirect on protected calls when a token exists and it's not an auth endpoint
+      if (token && !isAuthEndpoint) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return; // stop further handling
+      }
+      // For auth endpoints, let the caller handle and show proper error message
     }
     return Promise.reject(error);
   }
@@ -59,6 +69,25 @@ export const flightsAPI = {
   search: (searchParams) => api.post('/flights/search', searchParams),
   // Implemented on backend: POST /flights (employee only)
   create: (flightData) => api.post('/flights', flightData),
+  // New: suggestions for origin/destination typing
+  suggest: ({ field = 'source', q = '', limit = 15 } = {}) =>
+    api.get('/flights/suggestions', { params: { field, q, limit } }),
+  // New: list upcoming flights for employees
+  active: () => api.get('/flights/active'),
+  // New: export registered users for a flight (CSV) and get cancel nonce
+  exportRegistrations: async (flightId) => {
+    // We use a dedicated axios call to fetch blob and read headers
+    const resp = await api.get(`/flights/${flightId}/registrations/export`, {
+      responseType: 'blob',
+      // allow reading custom header via CORS expose_headers
+      // headers are already set in api instance
+    });
+    return resp; // caller will handle file save and read X-Cancel-Nonce
+  },
+  // New: cancel a flight with the nonce enforced by backend
+  cancel: (flightId, cancelNonce) => api.post(`/flights/${flightId}/cancel`, { cancel_nonce: cancelNonce }),
+  // New: force-cancel a flight (bypass nonce) for employee workflow during Force Bad
+  cancelForce: (flightId) => api.post(`/flights/${flightId}/cancel`, { force: true }),
 };
 
 // Bookings API
@@ -78,7 +107,15 @@ export const customersAPI = {
 // Weather API
 export const weatherAPI = {
   getForecast: (location) => api.get('/weather', { params: { location } }),
-  check: () => api.get('/weather/check'),
+  check: (ids = []) => {
+    if (ids && ids.length) {
+      const qs = encodeURIComponent(ids.join(','));
+      return api.get(`/weather/check?ids=${qs}`);
+    }
+    return api.get('/weather/check');
+  },
+  // New: force bad weather for demo (selected ids or all)
+  forceBad: (mode = 'selected', flightIds = []) => api.post('/weather/force_bad', { mode, flight_ids: flightIds }),
 };
 
 // Stats API

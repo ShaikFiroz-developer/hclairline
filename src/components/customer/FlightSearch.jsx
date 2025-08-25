@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import api from '../../utils/api';
+import React, { useState, useEffect, useRef } from 'react';
+import api, { flightsAPI } from '../../utils/api';
+import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSpring, animated } from '@react-spring/web';
 import { FiSearch, FiCalendar, FiUsers, FiMapPin, FiDollarSign } from 'react-icons/fi';
@@ -24,23 +25,63 @@ const FlightSearch = ({ darkMode }) => {
   const [searchPerformed, setSearchPerformed] = useState(false);
   const navigate = useNavigate();
 
-  const airports = [
-    { code: 'JFK', name: 'John F. Kennedy International Airport', city: 'New York' },
-    { code: 'LAX', name: 'Los Angeles International Airport', city: 'Los Angeles' },
-    { code: 'ORD', name: "O'Hare International Airport", city: 'Chicago' },
-    { code: 'LHR', name: 'Heathrow Airport', city: 'London' },
-    { code: 'CDG', name: 'Charles de Gaulle Airport', city: 'Paris' },
-    { code: 'NRT', name: 'Narita International Airport', city: 'Tokyo' },
-    { code: 'SYD', name: 'Sydney Airport', city: 'Sydney' },
-    { code: 'DXB', name: 'Dubai International Airport', city: 'Dubai' },
-  ];
+  // Live suggestion state
+  const [originSuggestions, setOriginSuggestions] = useState([]);
+  const [destSuggestions, setDestSuggestions] = useState([]);
+  const [showOriginDropdown, setShowOriginDropdown] = useState(false);
+  const [showDestDropdown, setShowDestDropdown] = useState(false);
+  const originTimeout = useRef(null);
+  const destTimeout = useRef(null);
+
+  // Fetch suggestions when user types
+  useEffect(() => {
+    if (originTimeout.current) clearTimeout(originTimeout.current);
+    const q = formData.origin.trim();
+    if (!q) { setOriginSuggestions([]); return; }
+    originTimeout.current = setTimeout(async () => {
+      try {
+        const { data } = await flightsAPI.suggest({ field: 'source', q });
+        setOriginSuggestions(Array.isArray(data) ? data : []);
+        setShowOriginDropdown(true);
+      } catch (_) {
+        setOriginSuggestions([]);
+      }
+    }, 200);
+    return () => originTimeout.current && clearTimeout(originTimeout.current);
+  }, [formData.origin]);
+
+  useEffect(() => {
+    if (destTimeout.current) clearTimeout(destTimeout.current);
+    const q = formData.destination.trim();
+    if (!q) { setDestSuggestions([]); return; }
+    destTimeout.current = setTimeout(async () => {
+      try {
+        const { data } = await flightsAPI.suggest({ field: 'destination', q });
+        setDestSuggestions(Array.isArray(data) ? data : []);
+        setShowDestDropdown(true);
+      } catch (_) {
+        setDestSuggestions([]);
+      }
+    }, 200);
+    return () => destTimeout.current && clearTimeout(destTimeout.current);
+  }, [formData.destination]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => {
+      let next = { ...prev, [name]: value };
+      // If destination equals source, clear destination and toast
+      if (name === 'destination' && value.trim() && value.trim().toLowerCase() === prev.origin.trim().toLowerCase()) {
+        next.destination = '';
+        toast.error('Destination can\'t be same as source');
+      }
+      // If origin changed to equal current destination, clear destination
+      if (name === 'origin' && prev.destination.trim() && value.trim().toLowerCase() === prev.destination.trim().toLowerCase()) {
+        next.destination = '';
+        toast.error('Destination can\'t be same as source');
+      }
+      return next;
+    });
   };
 
   const handleDateChange = (date, field) => {
@@ -56,12 +97,17 @@ const FlightSearch = ({ darkMode }) => {
     setError('');
     
     try {
-      // Backend expects 'source' and 'destination' exactly as stored.
-      // Our AddFlight stores city names (e.g., 'Dubai', 'Tokyo').
-      const codeToCity = (code) => airports.find(a => a.code === code)?.city || code;
+      // Prevent same source and destination
+      if (formData.origin.trim() && formData.destination.trim() &&
+          formData.origin.trim().toLowerCase() === formData.destination.trim().toLowerCase()) {
+        setLoading(false);
+        toast.error("Destination can't be same as source");
+        return;
+      }
+      // Backend stores city names, we submit the typed/selected text directly
       const response = await api.post('/flights/search', {
-        source: codeToCity(formData.origin),
-        destination: codeToCity(formData.destination),
+        source: formData.origin,
+        destination: formData.destination,
       });
       
       if (response.data && Array.isArray(response.data)) {
@@ -118,7 +164,7 @@ const FlightSearch = ({ darkMode }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="space-y-8">
             <animated.div style={springProps} className="text-center md:text-left">
-              <h1 className={`text-4xl md:text-5xl font-extrabold mb-3 bg-clip-text text-transparent bg-gradient-to-r ${darkMode ? 'from-indigo-300 to-fuchsia-300' : 'from-indigo-600 to-fuchsia-600'}`}>
+              <h1 className={`text-4xl md:text-5xl font-extrabold mb-3 pb-1 leading-[1.2] bg-clip-text text-transparent bg-gradient-to-r ${darkMode ? 'from-indigo-300 to-fuchsia-300' : 'from-indigo-600 to-fuchsia-600'}`}>
                 Find Your Perfect Flight
               </h1>
               <p className={`text-lg md:text-xl ${darkMode ? 'text-indigo-200/80' : 'text-gray-700'}`}>
@@ -135,23 +181,42 @@ const FlightSearch = ({ darkMode }) => {
                 <label htmlFor="origin" className="block text-sm font-medium mb-1">From</label>
                 <div className="relative">
                   <FiMapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <select
+                  <input
                     id="origin"
                     name="origin"
                     value={formData.origin}
                     onChange={handleChange}
+                    onFocus={() => setShowOriginDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowOriginDropdown(false), 150)}
+                    placeholder="Type city or origin"
                     className={`w-full pl-10 pr-3 py-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
                       darkMode ? 'bg-gray-700/40 border-gray-600 text-gray-100' : 'bg-white border-gray-200 text-gray-900'
                     }`}
                     required
-                  >
-                    <option value="">Select origin</option>
-                    {airports.map(airport => (
-                      <option key={airport.code} value={airport.code}>
-                        {airport.city} ({airport.code})
-                      </option>
-                    ))}
-                  </select>
+                  />
+                  {showOriginDropdown && originSuggestions.length > 0 && (
+                    <ul className={`absolute z-10 mt-1 w-full max-h-52 overflow-auto rounded-md border ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : 'bg-white border-gray-200 text-gray-900'}`}>
+                      {originSuggestions.map((s) => (
+                        <li
+                          key={s}
+                          className={`px-3 py-2 cursor-pointer hover:bg-indigo-50 ${darkMode ? 'hover:bg-indigo-900/30' : ''}`}
+                          onMouseDown={() => {
+                            setFormData(prev => {
+                              const next = { ...prev, origin: s };
+                              if (prev.destination.trim() && s.trim().toLowerCase() === prev.destination.trim().toLowerCase()) {
+                                next.destination = '';
+                                toast.error("Destination can't be same as source");
+                              }
+                              return next;
+                            });
+                            setShowOriginDropdown(false);
+                          }}
+                        >
+                          {s}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
 
@@ -160,23 +225,39 @@ const FlightSearch = ({ darkMode }) => {
                 <label htmlFor="destination" className="block text-sm font-medium mb-1">To</label>
                 <div className="relative">
                   <FiMapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <select
+                  <input
                     id="destination"
                     name="destination"
                     value={formData.destination}
                     onChange={handleChange}
+                    onFocus={() => setShowDestDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowDestDropdown(false), 150)}
+                    placeholder="Type city or destination"
                     className={`w-full pl-10 pr-3 py-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
                       darkMode ? 'bg-gray-700/40 border-gray-600 text-gray-100' : 'bg-white border-gray-200 text-gray-900'
                     }`}
                     required
-                  >
-                    <option value="">Select destination</option>
-                    {airports.map(airport => (
-                      <option key={airport.code} value={airport.code}>
-                        {airport.city} ({airport.code})
-                      </option>
-                    ))}
-                  </select>
+                  />
+                  {showDestDropdown && destSuggestions.length > 0 && (
+                    <ul className={`absolute z-10 mt-1 w-full max-h-52 overflow-auto rounded-md border ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : 'bg-white border-gray-200 text-gray-900'}`}>
+                      {destSuggestions.map((s) => (
+                        <li
+                          key={s}
+                          className={`px-3 py-2 cursor-pointer hover:bg-indigo-50 ${darkMode ? 'hover:bg-indigo-900/30' : ''}`}
+                          onMouseDown={() => {
+                            if (s.trim().toLowerCase() === formData.origin.trim().toLowerCase()) {
+                              toast.error("Destination can't be same as source");
+                              return;
+                            }
+                            setFormData(prev => ({ ...prev, destination: s }));
+                            setShowDestDropdown(false);
+                          }}
+                        >
+                          {s}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             </div>

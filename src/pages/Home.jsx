@@ -2,6 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 const Home = () => {
   const { isAuthenticated, user } = useAuth();
@@ -142,28 +145,24 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Popular Destinations */}
+      {/* Travel Tips / Blog */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">Popular Destinations</h2>
-            <Link to={isAuthenticated && user?.role === 'customer' ? '/customer/search' : '/login'} className="text-indigo-600 hover:text-indigo-700 font-semibold">Explore flights →</Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <h2 className="text-3xl font-bold mb-8">Travel Tips & News</h2>
+          <div className="grid md:grid-cols-3 gap-6">
             {[
-              { city: 'Dubai', code: 'DXB', img: 'https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1200&auto=format&fit=crop' },
-              { city: 'Tokyo', code: 'NRT', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200&auto=format&fit=crop' },
-              { city: 'London', code: 'LHR', img: 'https://images.unsplash.com/photo-1471623320832-44cd264c9a50?q=80&w=1200&auto=format&fit=crop' },
-              { city: 'New York', code: 'JFK', img: 'https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?q=80&w=1200&auto=format&fit=crop' },
-            ].map((d, i) => (
-              <div key={i} className="group relative overflow-hidden rounded-2xl shadow hover:shadow-lg transition">
-                <img src={d.img} alt={d.city} className="h-64 w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  onError={imgFallback('https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?q=80&w=1200&auto=format&fit=crop')}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
-                <div className="absolute bottom-4 left-4 text-white">
-                  <p className="text-lg font-semibold">{d.city}</p>
-                  <p className="text-sm opacity-90">{d.code}</p>
+              { title: 'Maximize your miles on every trip', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop' },
+              { title: 'How to find the best off-peak fares', img: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=1200&auto=format&fit=crop' },
+              { title: 'Business class: when does it pay off?', img: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=1200&auto=format&fit=crop' },
+              { title: 'Carry-on packing checklist (pro tips)', img: 'https://images.unsplash.com/photo-1519222970733-f546218fa6d7?q=80&w=1200&auto=format&fit=crop' },
+              { title: 'Airport lounge hacks you should know', img: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=1200&auto=format&fit=crop' },
+              { title: 'Red-eye flights: sleep better in the air', img: 'https://images.unsplash.com/photo-1517959105821-eaf2591984dd?q=80&w=1200&auto=format&fit=crop' },
+            ].map((p, i) => (
+              <div key={i} className="rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm hover:shadow-md transition">
+                <img src={p.img} alt="post" className="h-44 w-full object-cover" onError={imgFallback('https://images.unsplash.com/photo-1501862700950-18382cd41497?q=80&w=1200&auto=format&fit=crop')} />
+                <div className="p-5">
+                  <p className="font-semibold">{p.title}</p>
+                  <p className="mt-2 text-sm text-gray-600">Read more →</p>
                 </div>
               </div>
             ))}
@@ -171,33 +170,166 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Featured Deals */}
+      {/* FAQs */}
       <div className="bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <h2 className="text-3xl font-bold mb-8">Featured Deals</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
             {[
-              { route: 'Dubai → Tokyo', price: 499, class: 'Economy', img: 'https://images.unsplash.com/photo-1516397281156-ca07cf9746fc?q=80&w=1200&auto=format&fit=crop' },
-              { route: 'London → New York', price: 899, class: 'Business', img: 'https://images.unsplash.com/photo-1502920514313-52581002a659?q=80&w=1200&auto=format&fit=crop' },
-              { route: 'Tokyo → Dubai', price: 520, class: 'Economy', img: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=1200&auto=format&fit=crop' },
-            ].map((deal, i) => (
-              <div key={i} className="overflow-hidden rounded-2xl bg-white shadow hover:shadow-lg transition">
-                <div className="relative">
-                  <img src={deal.img} alt={deal.route} className="h-56 w-full object-cover"
-                       onError={imgFallback('https://images.unsplash.com/photo-1535223289827-42f1e9919769?q=80&w=1200&auto=format&fit=crop')} />
-                  <span className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-semibold">{deal.class}</span>
-                </div>
+              { q: 'Can I change my booking after purchase?', a: 'Yes, most fares allow changes with a fee. Visit My Bookings to manage your trip.' },
+              { q: 'Do you offer student discounts?', a: 'We frequently run promotions and offer special fares. Subscribe to our newsletter for alerts.' },
+              { q: 'What payment methods are accepted?', a: 'We accept major cards and UPI. All transactions are encrypted and secure.' },
+              { q: 'How much baggage can I carry?', a: 'Baggage allowance depends on route and fare class. Details are shown during booking and in your confirmation email.' },
+              { q: 'When do online check-in and seat selection open?', a: 'Online check-in opens 24–48 hours before departure depending on the route. You can select seats during check‑in.' },
+              { q: 'Do you send fare alerts?', a: 'Yes. Subscribe in the newsletter section to receive personalized fare alerts and tips.' },
+            ].map((f, i) => (
+              <details key={i} className="group border border-gray-200 rounded-xl bg-white p-4">
+                <summary className="cursor-pointer list-none flex items-center justify-between">
+                  <span className="font-semibold">{f.q}</span>
+                  <span className="text-indigo-600 group-open:rotate-45 transition">+</span>
+                </summary>
+                <p className="mt-2 text-gray-600">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* In-flight Experience */}
+      <div className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <h2 className="text-3xl font-bold mb-8">In‑flight Experience</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { t: 'Next‑gen seats', d: 'Ergonomic design, extra legroom options, and USB‑C at every seat.', img: 'https://images.unsplash.com/photo-1511732351157-1865efcb7b7b?q=80&w=1200&auto=format&fit=crop' },
+              { t: 'Cuisine you’ll love', d: 'Seasonal menus with regional favorites and special meal requests.', img: 'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?q=80&w=1200&auto=format&fit=crop' },
+              { t: 'Wi‑Fi & entertainment', d: 'Stream, browse, and enjoy a curated library of movies and music.', img: 'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?q=80&w=1200&auto=format&fit=crop' },
+            ].map((c, i) => (
+              <div key={i} className="rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm">
+                <img src={c.img} alt={c.t} className="h-52 w-full object-cover" onError={imgFallback('https://images.unsplash.com/photo-1511732351157-1865efcb7b7b?q=80&w=1200&auto=format&fit=crop')} />
                 <div className="p-5">
-                  <p className="font-semibold">{deal.route}</p>
-                  <p className="mt-1 text-sm text-gray-600">Limited-time offer</p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <p className="text-2xl font-extrabold text-indigo-600">₹{deal.price}</p>
-                    <Link to={isAuthenticated && user?.role === 'customer' ? '/customer/search' : '/login'} className="px-4 py-2 rounded-md bg-white text-indigo-700 ring-1 ring-black/5 hover:bg-indigo-50">Book now</Link>
-                  </div>
+                  <h3 className="font-semibold">{c.t}</h3>
+                  <p className="mt-2 text-gray-600 text-sm">{c.d}</p>
                 </div>
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Awards & Certifications */}
+      <div className="bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <h2 className="text-3xl font-bold mb-8">Awards & Certifications</h2>
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              { t: 'Skytrax 2025', s: 'Top Regional Airline' },
+              { t: 'Aviation Safety', s: 'IATA Certified' },
+              { t: 'Customer Delight', s: 'CSAT 4.7/5' },
+              { t: 'Green Operations', s: 'CarbonSmart Gold' },
+            ].map((a, i) => (
+              <div key={i} className="p-6 rounded-xl bg-white border border-gray-200 text-center shadow-sm">
+                <p className="text-xl font-extrabold text-indigo-600">{a.t}</p>
+                <p className="mt-2 text-sm text-gray-600">{a.s}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Popular Destinations (Carousel) */}
+      <div className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold">Popular Destinations</h2>
+            <Link to={isAuthenticated && user?.role === 'customer' ? '/customer/search' : '/login'} className="text-indigo-600 hover:text-indigo-700 font-semibold">Explore flights →</Link>
+          </div>
+          <Slider
+            dots={false}
+            infinite
+            speed={500}
+            slidesToShow={4}
+            slidesToScroll={1}
+            autoplay
+            autoplaySpeed={2500}
+            responsive={[
+              { breakpoint: 1280, settings: { slidesToShow: 3 } },
+              { breakpoint: 1024, settings: { slidesToShow: 2 } },
+              { breakpoint: 640, settings: { slidesToShow: 1 } },
+            ]}
+            className="!overflow-visible"
+          >
+            {[
+              { city: 'Dubai', code: 'DXB', img: 'https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1200&auto=format&fit=crop' },
+              { city: 'Tokyo', code: 'NRT', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200&auto=format&fit=crop' },
+              { city: 'London', code: 'LHR', img: 'https://images.unsplash.com/photo-1471623320832-44cd264c9a50?q=80&w=1200&auto=format&fit=crop' },
+              { city: 'New York', code: 'JFK', img: 'https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?q=80&w=1200&auto=format&fit=crop' },
+              { city: 'Singapore', code: 'SIN', img: 'https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?q=80&w=1200&auto=format&fit=crop' },
+            ].map((d, i) => (
+              <div key={i} className="px-2">
+                <div className="group relative overflow-hidden rounded-2xl shadow hover:shadow-lg transition">
+                  <img src={d.img} alt={d.city} className="h-64 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={imgFallback('https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?q=80&w=1200&auto=format&fit=crop')}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <p className="text-lg font-semibold">{d.city}</p>
+                    <p className="text-sm opacity-90">{d.code}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </Slider>
+        </div>
+      </div>
+
+      {/* Featured Deals (Carousel) */}
+      <div className="bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold">Featured Deals</h2>
+            <Link to={isAuthenticated && user?.role === 'customer' ? '/customer/search' : '/login'} className="text-indigo-600 hover:text-indigo-700 font-semibold">View all →</Link>
+          </div>
+          <Slider
+            dots
+            infinite
+            speed={500}
+            slidesToShow={3}
+            slidesToScroll={1}
+            autoplay
+            autoplaySpeed={3500}
+            responsive={[
+              { breakpoint: 1280, settings: { slidesToShow: 3 } },
+              { breakpoint: 1024, settings: { slidesToShow: 2 } },
+              { breakpoint: 640, settings: { slidesToShow: 1 } },
+            ]}
+            className="!overflow-visible"
+          >
+            {[
+              { route: 'Dubai → Tokyo', price: 499, class: 'Economy', img: 'https://images.unsplash.com/photo-1516397281156-ca07cf9746fc?q=80&w=1200&auto=format&fit=crop' },
+              { route: 'London → New York', price: 899, class: 'Business', img: 'https://images.unsplash.com/photo-1502920514313-52581002a659?q=80&w=1200&auto=format&fit=crop' },
+              { route: 'Tokyo → Dubai', price: 520, class: 'Economy', img: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=1200&auto=format&fit=crop' },
+              { route: 'Delhi → Singapore', price: 350, class: 'Economy', img: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?q=80&w=1200&auto=format&fit=crop' },
+            ].map((deal, i) => (
+              <div key={i} className="px-2">
+                <div className="overflow-hidden rounded-2xl bg-white shadow hover:shadow-lg transition">
+                  <div className="relative">
+                    <img src={deal.img} alt={deal.route} className="h-56 w-full object-cover"
+                         onError={imgFallback('https://images.unsplash.com/photo-1535223289827-42f1e9919769?q=80&w=1200&auto=format&fit=crop')} />
+                    <span className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-semibold">{deal.class}</span>
+                  </div>
+                  <div className="p-5">
+                    <p className="font-semibold">{deal.route}</p>
+                    <p className="mt-1 text-sm text-gray-600">Limited-time offer</p>
+                    <div className="mt-4 flex items-center justify-between">
+                      <p className="text-2xl font-extrabold text-indigo-600">₹{deal.price}</p>
+                      <Link to={isAuthenticated && user?.role === 'customer' ? '/customer/search' : '/login'} className="px-4 py-2 rounded-md bg-white text-indigo-700 ring-1 ring-black/5 hover:bg-indigo-50">Book now</Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </Slider>
         </div>
       </div>
 
@@ -233,6 +365,20 @@ const Home = () => {
               <div key={i} className="p-6 rounded-xl bg-white border border-gray-200 shadow-sm">
                 <h3 className="font-semibold mb-2">{item.title}</h3>
                 <p className="text-gray-600 text-sm">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Metrics */}
+      <div className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            {[{ k: 'Destinations', v: '120+' }, { k: 'Daily Flights', v: '800+' }, { k: 'Happy Travelers', v: '2M+' }, { k: 'On-time Rate', v: '93%' }].map((m, i) => (
+              <div key={i} className="p-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+                <p className="text-3xl font-extrabold text-indigo-600">{m.v}</p>
+                <p className="mt-1 text-sm text-gray-600">{m.k}</p>
               </div>
             ))}
           </div>

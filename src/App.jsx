@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, Link } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import AuthProvider, { useAuth } from './context/AuthContext';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
+import Chatbot from './components/common/Chatbot';
 import GlobalLoader from './components/common/GlobalLoader';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
@@ -156,6 +157,7 @@ function AppContent() {
         </div>
       </main>
       
+      <Chatbot />
       <Footer />
       
       {/* Toast Notifications */}

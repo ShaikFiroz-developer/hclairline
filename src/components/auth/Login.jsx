@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -35,14 +36,20 @@ const Login = ({ darkMode }) => {
       setIsSubmitting(true);
       const result = await login(email, password, role);
       if (result.success) {
+        toast.dismiss();
         setMessage('OTP has been sent to your email');
+        toast.success('OTP sent to your email', { duration: 2000 });
         setShowOtp(true);
       } else {
-        setMessage(result.error || 'Login failed. Please try again.');
+        const msg = result.error || 'Login failed. Please try again.';
+        setMessage(msg);
+        toast.error(msg, { duration: 2500 });
       }
     } catch (err) {
       console.error('Login error:', err);
-      setMessage('An error occurred during login. Please try again.');
+      const msg = 'An error occurred during login. Please try again.';
+      setMessage(msg);
+      toast.error(msg, { duration: 2500 });
     } finally {
       setIsSubmitting(false);
     }
@@ -69,12 +76,18 @@ const Login = ({ darkMode }) => {
       const result = await verifyOtp(email, otp.replace(/\D/g, ''), role);
       if (result.success) {
         // Redirect is handled by AuthContext
+        toast.dismiss();
+        toast.success('Logged in successfully', { duration: 1800 });
       } else {
-        setMessage(result.error || 'Failed to verify OTP. Please try again.');
+        const msg = result.error || 'Failed to verify OTP. Please try again.';
+        setMessage(msg);
+        toast.error(msg, { duration: 2500 });
       }
     } catch (err) {
       console.error('OTP Verification Error:', err);
-      setMessage('An error occurred during OTP verification. Please try again.');
+      const msg = 'An error occurred during OTP verification. Please try again.';
+      setMessage(msg);
+      toast.error(msg, { duration: 2500 });
     } finally {
       setIsVerifying(false);
     }

@@ -12,6 +12,7 @@ const Profile = ({ darkMode, userRole = 'customer' }) => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        //https://pythonserver-cqyu.onrender.com
         const res = await axios.get('https://pythonserver-cqyu.onrender.com/profile', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
@@ -100,21 +101,7 @@ const Profile = ({ darkMode, userRole = 'customer' }) => {
                 />
               </div>
 
-              {userRole === 'customer' && (
-                <div>
-                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Passport Number
-                  </label>
-                  <input
-                    name="passport_number"
-                    value={formData.passport_number || ''}
-                    onChange={handleChange}
-                    className={`w-full p-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                      darkMode ? 'bg-gray-700/50 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
-                    }`}
-                  />
-                </div>
-              )}
+              {/* Passport field removed */}
 
               <div>
                 <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>

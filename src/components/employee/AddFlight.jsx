@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { flightsAPI } from '../../utils/api';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -28,12 +28,44 @@ const AddFlight = ({ darkMode }) => {
     }));
   };
 
+  // Build a min datetime string for datetime-local input in local timezone (YYYY-MM-DDTHH:mm)
+  const minDateTime = useMemo(() => {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const mm = pad(now.getMonth() + 1);
+    const dd = pad(now.getDate());
+    const hh = pad(now.getHours());
+    const mi = pad(now.getMinutes());
+    return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setMessage({ text: '', type: '' });
 
     try {
+      // Basic datetime validations on client
+      const dep = formData.departure_time ? new Date(formData.departure_time) : null;
+      const arr = formData.arrival_time ? new Date(formData.arrival_time) : null;
+      const now = new Date();
+      if (!dep || !arr || isNaN(dep.getTime()) || isNaN(arr.getTime())) {
+        setMessage({ text: 'Please provide valid departure and arrival time.', type: 'error' });
+        setIsSubmitting(false);
+        return;
+      }
+      if (dep.getTime() <= now.getTime()) {
+        setMessage({ text: 'Departure time must be in the future.', type: 'error' });
+        setIsSubmitting(false);
+        return;
+      }
+      if (arr.getTime() <= dep.getTime()) {
+        setMessage({ text: 'Arrival time must be after departure time.', type: 'error' });
+        setIsSubmitting(false);
+        return;
+      }
+
       // Convert datetime-local (YYYY-MM-DDTHH:mm) to backend expected dd/MM/YYYY HH:mm
       const toBackendDate = (val) => {
         if (!val) return '';
@@ -159,6 +191,7 @@ const AddFlight = ({ darkMode }) => {
               name="departure_time"
               value={formData.departure_time}
               onChange={handleChange}
+              min={minDateTime}
               className="w-full p-2 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
             />
@@ -171,6 +204,7 @@ const AddFlight = ({ darkMode }) => {
               name="arrival_time"
               value={formData.arrival_time}
               onChange={handleChange}
+              min={formData.departure_time || minDateTime}
               className="w-full p-2 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
             />

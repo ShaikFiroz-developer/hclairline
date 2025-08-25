@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import AuthProvider from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -31,7 +31,7 @@ createRoot(document.getElementById('root')).render(
             <Toaster
               position="top-center"
               toastOptions={{
-                duration: 5000,
+                duration: 3000,
                 style: {
                   background: 'var(--bg-color)',
                   color: 'var(--text-color)',
