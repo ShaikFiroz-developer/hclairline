@@ -7,25 +7,33 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  BarController,
+  LineController,
   Title,
   Tooltip,
   Legend,
-  ArcElement,
-  PointElement,
-  LineElement
 } from 'chart.js';
 
 // Register ChartJS components
 ChartJS.register(
+  // scales
   CategoryScale,
   LinearScale,
+  // elements
   BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  // controllers (needed for mixed charts and production builds)
+  BarController,
+  LineController,
+  // plugins
   Title,
   Tooltip,
   Legend,
-  ArcElement,
-  PointElement,
-  LineElement
 );
 
 const Stats = ({ darkMode }) => {
