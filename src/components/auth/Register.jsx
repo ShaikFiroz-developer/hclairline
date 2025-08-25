@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../../utils/api';
@@ -16,6 +16,8 @@ const Register = ({ darkMode }) => {
   });
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -46,8 +48,23 @@ const Register = ({ darkMode }) => {
     return Object.keys(e).length === 0;
   };
 
+  // Live password strength meter
+  const passwordStrength = useMemo(() => {
+    const pwd = formData.password || '';
+    let score = 0;
+    if (pwd.length >= 6) score++;
+    if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    if (pwd.length >= 10) score++;
+    if (score <= 1) return { label: 'Weak', color: 'text-red-600' };
+    if (score <= 3) return { label: 'Medium', color: 'text-yellow-600' };
+    return { label: 'Strong', color: 'text-green-600' };
+  }, [formData.password]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitted(true);
     setMessage('');
     if (!validate()) return;
     try {
@@ -67,57 +84,66 @@ const Register = ({ darkMode }) => {
     >
       <h2 className="text-3xl font-bold mb-6 text-center">Register</h2>
       <form onSubmit={handleSubmit}>
-        <input
+        <input 
           name="email"
           value={formData.email}
           onChange={handleChange}
-          onBlur={validate}
           placeholder="Email"
           className={`w-full p-3 mb-2 border rounded ${errors.email ? 'border-red-500' : ''}`}
           required
           aria-invalid={!!errors.email}
         />
-        {errors.email && <p className="text-red-600 text-sm mb-2">{errors.email}</p>}
-        <input 
-          name="password" 
-          type="password" 
-          value={formData.password} 
-          onChange={handleChange}
-          onBlur={validate}
-          placeholder="Password" 
-          className={`w-full p-3 mb-2 border rounded ${errors.password ? 'border-red-500' : ''}`} 
-          required 
-          aria-invalid={!!errors.password}
-        />
-        {errors.password && <p className="text-red-600 text-sm mb-2">{errors.password}</p>}
+        {submitted && errors.email && <p className="text-red-600 text-sm mb-2">{errors.email}</p>}
+        <div className="relative mb-2">
+          <input 
+            name="password" 
+            type={showPassword ? 'text' : 'password'} 
+            value={formData.password} 
+            onChange={handleChange}
+            placeholder="Password" 
+            className={`w-full p-3 pr-12 border rounded ${errors.password ? 'border-red-500' : ''}`} 
+            required 
+            aria-invalid={!!errors.password}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((s) => !s)}
+            className="absolute inset-y-0 right-0 px-3 text-sm text-gray-600"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? 'Hide' : 'Show'}
+          </button>
+        </div>
+        {/* Live password strength */}
+        {formData.password && (
+          <p className={`text-sm mb-2 ${passwordStrength.color}`}>Strength: {passwordStrength.label}</p>
+        )}
+        {submitted && errors.password && <p className="text-red-600 text-sm mb-2">{errors.password}</p>}
         <input 
           name="name" 
           value={formData.name} 
           onChange={handleChange}
-          onBlur={validate} 
           placeholder="Name" 
           className={`w-full p-3 mb-2 border rounded ${errors.name ? 'border-red-500' : ''}`} 
           required 
           aria-invalid={!!errors.name}
         />
-        {errors.name && <p className="text-red-600 text-sm mb-2">{errors.name}</p>}
+        {submitted && errors.name && <p className="text-red-600 text-sm mb-2">{errors.name}</p>}
         <input 
           name="age" 
           type="number" 
           value={formData.age} 
           onChange={handleChange}
-          onBlur={validate} 
           placeholder="Age" 
           className={`w-full p-3 mb-2 border rounded ${errors.age ? 'border-red-500' : ''}`} 
           required 
           aria-invalid={!!errors.age}
         />
-        {errors.age && <p className="text-red-600 text-sm mb-2">{errors.age}</p>}
+        {submitted && errors.age && <p className="text-red-600 text-sm mb-2">{errors.age}</p>}
         <select 
           name="gender" 
           value={formData.gender} 
           onChange={handleChange}
-          onBlur={validate} 
           className={`w-full p-3 mb-2 border rounded ${errors.gender ? 'border-red-500' : ''}`} 
           required
           aria-invalid={!!errors.gender}
@@ -126,39 +152,37 @@ const Register = ({ darkMode }) => {
           <option value="M">Male</option>
           <option value="F">Female</option>
         </select>
-        {errors.gender && <p className="text-red-600 text-sm mb-2">{errors.gender}</p>}
+        {submitted && errors.gender && <p className="text-red-600 text-sm mb-2">{errors.gender}</p>}
         <input 
           name="location" 
           value={formData.location} 
           onChange={handleChange}
-          onBlur={validate} 
           placeholder="Location" 
           className={`w-full p-3 mb-2 border rounded ${errors.location ? 'border-red-500' : ''}`} 
           required 
           aria-invalid={!!errors.location}
         />
-        {errors.location && <p className="text-red-600 text-sm mb-2">{errors.location}</p>}
+        {submitted && errors.location && <p className="text-red-600 text-sm mb-2">{errors.location}</p>}
         <input 
           name="phone" 
           type="tel"
           inputMode="numeric"
           value={formData.phone} 
           onChange={handleChange}
-          onBlur={validate} 
           placeholder="Phone (10 digits or 91 + 10 digits)" 
           className={`w-full p-3 mb-2 border rounded ${errors.phone ? 'border-red-500' : ''}`} 
           required 
           aria-invalid={!!errors.phone}
-          pattern="^(91\d{10}|\d{10})$"
+          pattern="^(91\\d{10}|\\d{10})$"
           title="Enter 10 digits (local) or 91 followed by 10 digits (numbers only)"
           maxLength={12}
         />
+        {/* Live phone validation */}
         {errors.phone && <p className="text-red-600 text-sm mb-2">{errors.phone}</p>}
         <select 
           name="role" 
           value={formData.role} 
           onChange={handleChange}
-          onBlur={validate} 
           className={`w-full p-3 mb-4 border rounded ${errors.role ? 'border-red-500' : ''}`} 
           required
           aria-invalid={!!errors.role}
@@ -166,6 +190,7 @@ const Register = ({ darkMode }) => {
           <option value="customer">Customer</option>
           <option value="employee">Employee</option>
         </select>
+        {submitted && errors.role && <p className="text-red-600 text-sm mb-2">{errors.role}</p>}
         <motion.button 
           whileHover={{ scale: 1.05 }} 
           type="submit" 

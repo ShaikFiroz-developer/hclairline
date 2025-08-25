@@ -15,6 +15,7 @@ const Login = ({ darkMode }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const validateLogin = () => {
@@ -106,28 +107,35 @@ const Login = ({ darkMode }) => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            onBlur={validateLogin}
             placeholder="Email"
             className={`w-full p-3 mb-2 border rounded ${errors.email ? 'border-red-500' : ''}`}
             required
             aria-invalid={!!errors.email}
           />
           {errors.email && <p className="text-red-600 text-sm mb-2">{errors.email}</p>}
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onBlur={validateLogin}
-            placeholder="Password"
-            className={`w-full p-3 mb-2 border rounded ${errors.password ? 'border-red-500' : ''}`}
-            required
-            aria-invalid={!!errors.password}
-          />
+          <div className="relative mb-2">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className={`w-full p-3 pr-12 border rounded ${errors.password ? 'border-red-500' : ''}`}
+              required
+              aria-invalid={!!errors.password}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              className="absolute inset-y-0 right-0 px-3 text-sm text-gray-600"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
           {errors.password && <p className="text-red-600 text-sm mb-2">{errors.password}</p>}
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            onBlur={validateLogin}
             className={`w-full p-3 mb-4 border rounded ${errors.role ? 'border-red-500' : ''}`}
             aria-invalid={!!errors.role}
           >
