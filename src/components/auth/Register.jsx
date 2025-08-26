@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -23,8 +24,8 @@ const Register = ({ darkMode }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'phone') {
-      // digits only, no leading +
-      const sanitized = value.replace(/\D/g, '').slice(0, 15);
+      // Allow only digits, max 10
+      const sanitized = value.replace(/\D/g, '').slice(0, 10);
       setFormData({ ...formData, phone: sanitized });
       return;
     }
@@ -41,8 +42,8 @@ const Register = ({ darkMode }) => {
     if (!ageNum || ageNum < 18 || ageNum > 120) e.age = 'Age must be between 18 and 120';
     if (!['M', 'F'].includes(formData.gender)) e.gender = 'Select a gender';
     if (!formData.location || formData.location.trim().length < 2) e.location = 'Enter a valid location';
-    // Indian numbers: either 10 digits (local) or 12 digits starting with 91 (country code without +)
-    if (!/^(91\d{10}|\d{10})$/.test(formData.phone.trim())) e.phone = 'Enter 10 digits (local) or 91 + 10 digits (no +)';
+    // Only 10-digit phone number allowed
+    if (!/^\d{10}$/.test(formData.phone.trim())) e.phone = 'Enter a valid 10-digit phone number';
     if (!['customer', 'employee'].includes(formData.role)) e.role = 'Select a valid role';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -169,13 +170,13 @@ const Register = ({ darkMode }) => {
           inputMode="numeric"
           value={formData.phone} 
           onChange={handleChange}
-          placeholder="Phone (10 digits or 91 + 10 digits)" 
+          placeholder="Phone (10 digits)" 
           className={`w-full p-3 mb-2 border rounded ${errors.phone ? 'border-red-500' : ''}`} 
           required 
           aria-invalid={!!errors.phone}
-          pattern="^(91\\d{10}|\\d{10})$"
-          title="Enter 10 digits (local) or 91 followed by 10 digits (numbers only)"
-          maxLength={12}
+          pattern="\d{10}"
+          title="Enter a valid 10-digit phone number"
+          maxLength={10}
         />
         {/* Live phone validation */}
         {errors.phone && <p className="text-red-600 text-sm mb-2">{errors.phone}</p>}
